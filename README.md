@@ -1,77 +1,147 @@
 # OCR Text Recognition
 
-A web-based OCR (Optical Character Recognition) application that recognizes text from images with confidence level visualization.
+A modern web application for Optical Character Recognition (OCR) that combines the power of EasyOCR with a beautiful React frontend. This application allows users to extract text from images with confidence level visualization.
+
 
 ## Features
 
-- Upload images via drag & drop or click
-- Real-time text recognition
-- Confidence level visualization with color coding
-- Maintains original text layout
-- GPU acceleration support (if available)
+- **Modern UI/UX**
+  - Clean and intuitive interface
+  - Drag & drop image upload
+  - Real-time image preview
+  - Responsive design for all devices
 
-## Technologies
+- **Text Recognition**
+  - High-accuracy text extraction
+  - Confidence level visualization
+  - Color-coded results
+  - Maintains text layout and structure
 
-- Backend:
-  - Flask (Python web framework)
-  - EasyOCR (OCR engine)
-  - PyTorch (Deep learning framework)
-  
-- Frontend:
-  - HTML5
-  - CSS3
-  - JavaScript (ES6+)
+- **Performance**
+  - GPU acceleration support
+  - Fast processing
+  - Efficient memory usage
 
-## Installation
+## Tech Stack
 
-1. Clone the repository:
+### Frontend
+- **React.js** - Modern UI framework
+- **Material-UI** - Component library
+- **Axios** - HTTP client
+
+### Backend
+- **Flask** - Python web framework
+- **EasyOCR** - OCR engine
+- **PyTorch** - Deep learning framework
+
+## Getting Started
+
+### Prerequisites
+- Python 3.8+
+- Node.js 14+
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-git clone https://github.com/YOUR_USERNAME/ocr-text-recognition.git
-cd ocr-text-recognition
+git clone https://github.com/Yanchun-Li/EasyOCR-text-recognition.git
+cd EasyOCR-text-recognition
 ```
 
-2. Create a virtual environment and activate it:
+2. **Set up Python environment**
 ```bash
+# Create virtual environment
 python -m venv venv
+
+# Activate virtual environment
 # On Windows
 venv\Scripts\activate
 # On Unix or MacOS
 source venv/bin/activate
-```
 
-3. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-4. Run the application:
+3. **Set up React frontend**
 ```bash
+cd ocr-frontend
+npm install
+```
+
+### Running the Application
+
+1. **Start the backend server**
+```bash
+# From the root directory
 python app.py
 ```
 
-5. Open your browser and visit `http://localhost:5000`
+2. **Start the frontend development server**
+```bash
+# From the ocr-frontend directory
+cd ocr-frontend
+npm start
+```
 
-## Usage
+3. **Access the application**
+Open your browser and visit `http://localhost:3000`
 
-1. Open the web interface
-2. Upload an image by clicking the upload area or dragging and dropping
-3. Wait for the processing to complete
-4. View the recognized text with confidence levels indicated by colors:
-   - Green: High confidence (100%)
-   - Yellow: Medium confidence (50%)
-   - Red: Low confidence (0%)
+## Usage Guide
+
+1. **Upload an Image**
+   - Drag and drop an image onto the upload area
+   - Or click to select a file from your computer
+
+2. **View Results**
+   - See the original image preview
+   - View recognized text with confidence levels
+   - Check the confidence indicator:
+     - Green: High confidence (100%)
+     - Yellow: Medium confidence (50%)
+     - Red: Low confidence (0%)
 
 ## Project Structure
 
 ```
 ocr-text-recognition/
-├── app.py              # Flask application
-├── requirements.txt    # Python dependencies
-├── templates/         
-│   └── index.html     # Frontend template
-└── uploads/           # Temporary folder for uploads
+├── app.py                 # Flask backend
+├── requirements.txt       # Python dependencies
+├── uploads/              # Temporary upload directory
+└── ocr-frontend/         # React frontend
+    ├── src/
+    │   ├── components/   # React components
+    │   ├── App.js        # Main application
+    │   └── index.js      # Entry point
+    └── package.json      # Node dependencies
 ```
 
-## License
+## API Documentation
 
-MIT License 
+### POST /ocr
+Process an image and extract text.
+
+**Request:**
+- Method: `POST`
+- Content-Type: `multipart/form-data`
+- Body: `file` (image file)
+
+**Response:**
+```json
+{
+  "success": true,
+  "result": [
+    {
+      "text": "recognized text",
+      "confidence": 95.5,
+      "bbox": [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
+    }
+  ]
+}
+```
+
+## Author
+
+**Yanchun Li**
+- GitHub: [@Yanchun-Li](https://github.com/Yanchun-Li) 
