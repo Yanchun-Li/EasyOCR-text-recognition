@@ -1,6 +1,6 @@
 # OCR Text Recognition
 
-A modern web application for Optical Character Recognition (OCR) that combines the power of EasyOCR with a beautiful React frontend. This application allows users to extract text from images with confidence level visualization.
+A modern web application for Optical Character Recognition (OCR) that combines the power of EasyOCR with a beautiful React frontend. This application allows users to extract text from images with confidence level visualization and choose between different OCR engines.
 
 
 ## Features
@@ -10,12 +10,14 @@ A modern web application for Optical Character Recognition (OCR) that combines t
   - Drag & drop image upload
   - Real-time image preview
   - Responsive design for all devices
+  - OCR engine selection (Local Model or EasyOCR)
 
 - **Text Recognition**
   - High-accuracy text extraction
   - Confidence level visualization
   - Color-coded results
   - Maintains text layout and structure
+  - Multiple OCR engine support
 
 - **Performance**
   - GPU acceleration support
@@ -33,6 +35,7 @@ A modern web application for Optical Character Recognition (OCR) that combines t
 - **Flask** - Python web framework
 - **EasyOCR** - OCR engine
 - **PyTorch** - Deep learning framework
+- **Custom OCR Model** - Local trained model
 
 ## Getting Started
 
@@ -90,13 +93,19 @@ Open your browser and visit `http://localhost:3000`
 
 ## Usage Guide
 
-1. **Upload an Image**
+1. **Select OCR Engine**
+   - Choose between "Local Model" or "EasyOCR"
+   - Local Model: Uses a custom-trained model
+   - EasyOCR: Uses the pre-trained EasyOCR model
+
+2. **Upload an Image**
    - Drag and drop an image onto the upload area
    - Or click to select a file from your computer
 
-2. **View Results**
+3. **View Results**
    - See the original image preview
    - View recognized text with confidence levels
+   - Check which OCR engine was used
    - Check the confidence indicator:
      - Green: High confidence (100%)
      - Yellow: Medium confidence (50%)
@@ -108,6 +117,8 @@ Open your browser and visit `http://localhost:3000`
 ocr-text-recognition/
 ├── app.py                 # Flask backend
 ├── requirements.txt       # Python dependencies
+├── model_loader.py        # Custom model loader
+├── custom_example.py      # Custom model definition
 ├── uploads/              # Temporary upload directory
 └── ocr-frontend/         # React frontend
     ├── src/
@@ -125,7 +136,9 @@ Process an image and extract text.
 **Request:**
 - Method: `POST`
 - Content-Type: `multipart/form-data`
-- Body: `file` (image file)
+- Body: 
+  - `file` (image file)
+  - `engine` (optional, default: "local") - "local" or "easyocr"
 
 **Response:**
 ```json
@@ -137,7 +150,8 @@ Process an image and extract text.
       "confidence": 95.5,
       "bbox": [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
     }
-  ]
+  ],
+  "engine": "local"
 }
 ```
 
