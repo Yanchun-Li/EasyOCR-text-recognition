@@ -8,6 +8,9 @@ const theme = createTheme({
     primary: {
       main: '#1976d2',
     },
+    secondary: {
+      main: '#9c27b0',
+    },
   },
 });
 
@@ -15,7 +18,7 @@ function App() {
   const [result, setResult] = useState(null);
 
   const handleImageUpload = (data) => {
-    setResult(data.result);
+    setResult(data);
   };
 
   return (

@@ -1,13 +1,14 @@
+import os
+import sys
+import logging
+import traceback
+import numpy as np
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import easyocr
-import os
-import logging
 import torch
 from werkzeug.utils import secure_filename
-import traceback
-import sys
-import numpy as np
+from model_loader import CustomModelLoader
+import easyocr
 
 # Configure logging
 logging.basicConfig(
@@ -19,14 +20,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 # Configure upload folder
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
@@ -40,17 +39,36 @@ logger.info(f"Using device: {device}")
 # Initialize EasyOCR
 try:
     logger.info("Initializing EasyOCR...")
-    reader = easyocr.Reader(['en'], gpu=(device=='cuda'))
+    easyocr_reader = easyocr.Reader(['en'], gpu=(device=='cuda'))
     logger.info("EasyOCR initialized successfully")
 except Exception as e:
     logger.error(f"Failed to initialize EasyOCR: {str(e)}")
     logger.error(traceback.format_exc())
     raise
 
+# Initialize local model
+try:
+    logger.info("Initializing local model...")
+    model_loader = CustomModelLoader()
+    logger.info("Local model initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize local model: {str(e)}")
+    logger.error(traceback.format_exc())
+    raise
+
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({
+        'status': 'ok',
+        'message': 'OCR API is running',
+        'endpoints': {
+            '/ocr': 'POST - Upload an image for OCR processing'
+        }
+    })
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# 将NumPy类型转换为Python原生类型
 def convert_numpy_types(obj):
     if isinstance(obj, np.integer):
         return int(obj)
@@ -84,6 +102,10 @@ def ocr():
             logger.error("No selected file")
             return jsonify({'error': 'No selected file'}), 400
         
+        # Get OCR engine type from request
+        ocr_engine = request.form.get('engine', 'local')  # Default to local model
+        logger.info(f"Using OCR engine: {ocr_engine}")
+        
         if file and allowed_file(file.filename):
             try:
                 # Save file temporarily
@@ -92,20 +114,36 @@ def ocr():
                 file.save(filepath)
                 logger.info(f"File saved to: {filepath}")
                 
-                # Process image with EasyOCR
-                logger.info("Starting OCR processing...")
-                results = reader.readtext(filepath)
-                logger.info(f"OCR completed, found {len(results)} text regions")
-                
-                # Format results
-                formatted_results = []
-                for detection in results:
-                    bbox, text, confidence = detection
-                    formatted_results.append({
-                        'text': text,
-                        'confidence': round(float(confidence) * 100, 2),
-                        'bbox': convert_numpy_types(bbox)
-                    })
+                # Process image based on selected OCR engine
+                if ocr_engine == 'easyocr':
+                    # Use EasyOCR
+                    logger.info("Starting OCR processing with EasyOCR...")
+                    results = easyocr_reader.readtext(filepath)
+                    logger.info(f"OCR completed, found {len(results)} text regions")
+                    
+                    # Format results
+                    formatted_results = []
+                    for detection in results:
+                        bbox, text, confidence = detection
+                        formatted_results.append({
+                            'text': text,
+                            'confidence': round(float(confidence) * 100, 2),
+                            'bbox': convert_numpy_types(bbox)
+                        })
+                else:
+                    # Use local model
+                    logger.info("Starting OCR processing with local model...")
+                    results = model_loader.predict(filepath)
+                    logger.info("OCR completed with local model")
+                    
+                    # Format results to match EasyOCR format
+                    formatted_results = []
+                    for item in results:
+                        formatted_results.append({
+                            'text': item['text'],
+                            'confidence': item['confidence'],
+                            'bbox': None  # Local model doesn't provide bounding boxes
+                        })
                 
                 # Clean up
                 os.remove(filepath)
@@ -113,7 +151,8 @@ def ocr():
                 
                 return jsonify({
                     'success': True,
-                    'result': formatted_results
+                    'result': formatted_results,
+                    'engine': ocr_engine
                 })
                 
             except Exception as e:

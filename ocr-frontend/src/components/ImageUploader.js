@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Box, Button, Typography, CircularProgress, Alert } from '@mui/material';
+import { Box, Button, Typography, CircularProgress, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Divider } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const ImageUploader = ({ onImageUpload }) => {
@@ -7,6 +7,7 @@ const ImageUploader = ({ onImageUpload }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [engine, setEngine] = useState('local'); // Default to local model
   const fileInputRef = useRef(null);
 
   const handleDragOver = (e) => {
@@ -37,6 +38,10 @@ const ImageUploader = ({ onImageUpload }) => {
     }
   };
 
+  const handleEngineChange = (e) => {
+    setEngine(e.target.value);
+  };
+
   const handleFile = async (file) => {
     setIsLoading(true);
     setError(null);
@@ -47,8 +52,9 @@ const ImageUploader = ({ onImageUpload }) => {
 
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('engine', engine); // Add engine selection to form data
       
-      console.log('Sending file to server:', file.name);
+      console.log('Sending file to server:', file.name, 'with engine:', engine);
       const response = await fetch('http://localhost:5000/ocr', {
         method: 'POST',
         body: formData,
@@ -76,6 +82,22 @@ const ImageUploader = ({ onImageUpload }) => {
 
   return (
     <Box>
+      <FormControl component="fieldset" sx={{ mb: 3, width: '100%' }}>
+        <FormLabel component="legend">Select OCR Engine</FormLabel>
+        <RadioGroup
+          row
+          aria-label="ocr-engine"
+          name="ocr-engine"
+          value={engine}
+          onChange={handleEngineChange}
+        >
+          <FormControlLabel value="local" control={<Radio />} label="Local Model" />
+          <FormControlLabel value="easyocr" control={<Radio />} label="EasyOCR" />
+        </RadioGroup>
+      </FormControl>
+      
+      <Divider sx={{ mb: 3 }} />
+      
       <Box
         sx={{
           border: '2px dashed',

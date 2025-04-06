@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid, Chip } from '@mui/material';
 
 const ResultDisplay = ({ result }) => {
   if (!result) return null;
@@ -11,9 +11,16 @@ const ResultDisplay = ({ result }) => {
 
   return (
     <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Recognition Result
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">
+          Recognition Result
+        </Typography>
+        <Chip 
+          label={result.engine === 'easyocr' ? 'EasyOCR' : 'Local Model'} 
+          color={result.engine === 'easyocr' ? 'primary' : 'secondary'} 
+          size="small" 
+        />
+      </Box>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Box sx={{ 
@@ -23,7 +30,7 @@ const ResultDisplay = ({ result }) => {
             borderRadius: 1,
             minHeight: '100px'
           }}>
-            {result.map((item, index) => (
+            {result.result.map((item, index) => (
               <Box
                 key={index}
                 sx={{
